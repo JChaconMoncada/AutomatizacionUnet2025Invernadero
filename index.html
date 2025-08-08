@@ -48,6 +48,13 @@
         onValue(luzLedRef, (snapshot) => {
           luzLedEstado = snapshot.val();
           lightsBtn.textContent = luzLedEstado ? "🔦 Apagar Luz" : "💡 Encender Luz";
+
+          // Cambiar Clases para animacion y color
+          if (luzLedEstado) {
+            lightsBtn.classList.add("luz-on");
+          } else {
+            lightsBtn.classList.remove("luz-on");
+          }
         });
 
         // Función para cambiar estado luz al hacer click
