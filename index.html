@@ -31,9 +31,9 @@
       const db = getDatabase(app);
 
       // Referencias en la base de datos
-      const tempRef = ref(db, "invernadero/temperatura");
-      const humRef = ref(db, "invernadero/humedad");
-      const luzRef = ref(db, "invernadero/luz");
+      const tempRef = ref(db, "invernadero/sensores/temperatura");
+      const humRef = ref(db, "invernadero/sensores/humedad");
+      const luzRef = ref(db, "invernadero/sensores/luz");
 
       // Escuchar cambios en tiempo real
       onValue(tempRef, (snapshot) => {
