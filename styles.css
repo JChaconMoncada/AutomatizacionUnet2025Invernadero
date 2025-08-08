@@ -9,6 +9,33 @@ body {
   animation: gradientBG 15s ease infinite;
 }
 
+table.historial {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+table.historial th, table.historial td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+table.historial th {
+  background-color: #f0f0f0;
+}
+
+table.historial tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.container-historial {
+  margin: 30px auto;
+  max-width: 900px;
+  padding: 0 15px;
+}
+
 .btn {
   padding: 12px 24px;
   font-size: 16px;
