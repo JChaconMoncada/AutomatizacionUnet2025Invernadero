@@ -16,13 +16,13 @@ body {
   border: none;
   border-radius: 6px;
   color: white;
-  background-color: #777; /* Gris apagado */
+  background-color: #28a745; /* Gris apagado */
   transition: background-color 0.4s ease, box-shadow 0.4s ease;
   box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
 .btn.luz-on {
-  background-color: #28a745; /* Verde */
+  background-color: #777; /* Verde */
   box-shadow: 0 0 12px #28a745;
 }
 
