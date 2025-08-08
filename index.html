@@ -79,15 +79,15 @@
     let luzLedEstado = false;
     let motorEstado = false;
 
-    // Escuchar cambios en el LED
-    onValue(ref(db, "invernadero/estado/luz_led"), (snapshot) => {
+    // Escuchar cambios en el LED (directo en /invernadero/luz_led)
+    onValue(ref(db, "invernadero/luz_led"), (snapshot) => {
       luzLedEstado = snapshot.val();
       lightsBtn.textContent = luzLedEstado ? "🔦 Apagar Luz" : "💡 Encender Luz";
       lightsBtn.classList.toggle("luz-on", luzLedEstado);
     });
 
-    // Escuchar cambios en el motor
-    onValue(ref(db, "invernadero/estado/riego"), (snapshot) => {
+    // Escuchar cambios en el motor (directo en /invernadero/riego)
+    onValue(ref(db, "invernadero/riego"), (snapshot) => {
       motorEstado = snapshot.val();
       waterPumpBtn.textContent = motorEstado ? "💧 Apagar Bomba" : "💦 Encender Bomba";
       waterPumpBtn.classList.toggle("motor-on", motorEstado);
@@ -95,12 +95,12 @@
 
     // Control del LED
     lightsBtn.addEventListener("click", () => {
-      set(ref(db, "invernadero/estado/luz_led"), !luzLedEstado);
+      set(ref(db, "invernadero/luz_led"), !luzLedEstado);
     });
 
     // Control del motor
     waterPumpBtn.addEventListener("click", () => {
-      set(ref(db, "invernadero/estado/riego"), !motorEstado);
+      set(ref(db, "invernadero/riego"), !motorEstado);
     });
 
     // Sensores (opcional)
