@@ -1,188 +1,234 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Invernadero Automático</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <h1>🌱 Invernadero Automático</h1>
-  <p style="text-align:center;">Monitoreo y control en tiempo real</p>
-  <!-- Datos sensores actuales -->
-  <section>
-    <h2>Datos Sensores</h2>
-    <div style="display: flex; justify-content: space-around; margin-bottom: 30px;">
-      <div>
-        <h3>🌡️ Temperatura</h3>
-        <p id="temperature">-- °C</p>
-      </div>
-      <div>
-        <h3>💧 Humedad</h3>
-        <p id="humidity">-- %</p>
-      </div>
-      <div>
-        <h3>☀️ Luz</h3>
-        <p id="light">--</p>
-      </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invernadero Automático</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🌱 Invernadero Automático</h1>
+        <p>Monitoreo y control en tiempo real</p>
+      </header>
+
+      <!-- Datos sensores actuales -->
+      <section class="sensor-data">
+        <div class="data-card">
+          <h2>🌡️ Temperatura</h2>
+          <div class="value" id="temperature">-- °C</div>
+          <div class="status">Tiempo real</div>
+        </div>
+        <div class="data-card">
+          <h2>💧 Humedad</h2>
+          <div class="value" id="humidity">-- %</div>
+          <div class="status">Tiempo real</div>
+        </div>
+        <div class="data-card">
+          <h2>☀️ Luz</h2>
+          <div class="value" id="light">--</div>
+          <div class="status">Tiempo real</div>
+        </div>
+      </section>
+
+      <!-- Controles manuales -->
+      <section class="controls">
+        <h2>⚙️ Controles Manuales</h2>
+        <div class="control-buttons">
+          <button id="water-pump-btn" class="btn pump-off">
+            💦 Encender Bomba de Agua
+          </button>
+          <button id="lights-toggle-btn" class="btn">💡 Encender Luz</button>
+        </div>
+        <p id="control-status">Modo automático activado.</p>
+      </section>
+
+      <!-- Historial datos de inventario -->
+      <section class="history-container">
+        <h2>📊 Historial de Datos de Inventario</h2>
+        <table id="tabla-datos-inventario">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Temperatura (°C)</th>
+              <th>Humedad (%)</th>
+              <th>Luz</th>
+              <th>Riego Activado</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Historial eventos -->
+      <section class="chart-container">
+        <h2>📋 Historial de Eventos</h2>
+        <table id="tabla-eventos">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Duración (segundos)</th>
+              <th>Estado</th>
+              <th>Descripción</th>
+              <th>Nivel</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <footer>
+        <p>Sistema de Invernadero Automático © 2023</p>
+      </footer>
     </div>
-  </section>
 
-  <!-- Controles manuales -->
-  <section>
-    <h2>⚙️ Controles Manuales</h2>
-    <button id="water-pump-btn" class="btn pump-off">💦 Encender Bomba de Agua</button>
-    <button id="lights-toggle-btn" class="btn">💡 Encender Luz</button>
-    <p id="control-status" style="margin-top: 10px; font-style: italic;">Modo automático activado.</p>
-  </section>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        onValue,
+        set,
+      } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
-  <!-- Historial datos de inventario -->
-  <section>
-    <div class="container-historial">
-    <h2>📊 Historial de Datos de Inventario</h2>
-    <table id="tabla-datos-inventario">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Temperatura (°C)</th>
-          <th>Humedad (%)</th>
-          <th>Luz</th>
-          <th>Riego Activado</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
+      // Configuración Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyAdF3v1I9a6cFVcLBE24Sy8EICiV1c3r3M",
+        authDomain: "automatizacionarduino.firebaseapp.com",
+        databaseURL:
+          "https://automatizacionarduino-default-rtdb.firebaseio.com",
+        projectId: "automatizacionarduino",
+        storageBucket: "automatizacionarduino.firebasestorage.app",
+        messagingSenderId: "224255036880",
+        appId: "1:224255036880:web:d62a4716e10ba4e8fa3dd5",
+        measurementId: "G-9CZ9GR0YR5",
+      };
 
-  <!-- Historial eventos -->
-  <section>
-    <h2>📋 Historial de Eventos</h2>
-    <table id="tabla-eventos">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Tipo</th>
-          <th>Duración (segundos)</th>
-          <th>Estado</th>
-          <th>Descripción</th>
-          <th>Nivel</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
-  
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
 
-    // Configuración Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyAdF3v1I9a6cFVcLBE24Sy8EICiV1c3r3M",
-      authDomain: "automatizacionarduino.firebaseapp.com",
-      databaseURL: "https://automatizacionarduino-default-rtdb.firebaseio.com",
-      projectId: "automatizacionarduino",
-      storageBucket: "automatizacionarduino.firebasestorage.app",
-      messagingSenderId: "224255036880",
-      appId: "1:224255036880:web:d62a4716e10ba4e8fa3dd5",
-      measurementId: "G-9CZ9GR0YR5"
-    };
+      // Referencias a botones y tablas
+      const lightsBtn = document.getElementById("lights-toggle-btn");
+      const waterPumpBtn = document.getElementById("water-pump-btn");
+      const tablaInventarioBody = document.querySelector(
+        "#tabla-datos-inventario tbody"
+      );
+      const tablaEventosBody = document.querySelector("#tabla-eventos tbody");
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+      let luzLedEstado = false;
+      let motorEstado = false;
 
-    // Referencias a botones y tablas
-    const lightsBtn = document.getElementById("lights-toggle-btn");
-    const waterPumpBtn = document.getElementById("water-pump-btn");
-    const tablaInventarioBody = document.querySelector("#tabla-datos-inventario tbody");
-    const tablaEventosBody = document.querySelector("#tabla-eventos tbody");
+      // Función para formatear fechas
+      function formatoFecha(fechaStr) {
+        const d = new Date(fechaStr);
+        return d.toLocaleString("es-ES", {
+          dateStyle: "short",
+          timeStyle: "short",
+        });
+      }
 
-    let luzLedEstado = false;
-    let motorEstado = false;
+      // Escuchar estado luz_led
+      onValue(
+        ref(db, "invernadero/luz_led"),
+        (snapshot) => {
+          luzLedEstado = snapshot.val();
+          lightsBtn.textContent = luzLedEstado
+            ? "🔦 Apagar Luz"
+            : "💡 Encender Luz";
+          lightsBtn.classList.toggle("lights-off-active", luzLedEstado);
+        },
+        (error) => {
+          console.error("Error al leer luz_led:", error);
+        }
+      );
 
-    // Función para formatear fechas
-    function formatoFecha(fechaStr) {
-      const d = new Date(fechaStr);
-      return d.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
-    }
+      // Escuchar estado riego
+      onValue(
+        ref(db, "invernadero/riego"),
+        (snapshot) => {
+          motorEstado = snapshot.val();
+          waterPumpBtn.textContent = motorEstado
+            ? "💧 Apagar Bomba"
+            : "💦 Encender Bomba";
+          waterPumpBtn.classList.toggle("pump-on", motorEstado);
+        },
+        (error) => {
+          console.error("Error al leer riego:", error);
+        }
+      );
 
-    // Escuchar estado luz_led
-    onValue(ref(db, "invernadero/luz_led"), (snapshot) => {
-      luzLedEstado = snapshot.val();
-      lightsBtn.textContent = luzLedEstado ? "🔦 Apagar Luz" : "💡 Encender Luz";
-      lightsBtn.classList.toggle("luz-on", luzLedEstado);
-    }, (error) => {
-      console.error("Error al leer luz_led:", error);
-    });
+      // Control de luz con botón
+      lightsBtn.addEventListener("click", () => {
+        set(ref(db, "invernadero/luz_led"), !luzLedEstado).catch((e) =>
+          console.error("Error al escribir luz_led:", e)
+        );
+      });
 
-    // Escuchar estado riego
-    onValue(ref(db, "invernadero/riego"), (snapshot) => {
-      motorEstado = snapshot.val();
-      waterPumpBtn.textContent = motorEstado ? "💧 Apagar Bomba" : "💦 Encender Bomba";
-      waterPumpBtn.classList.toggle("motor-on", motorEstado);
-    }, (error) => {
-      console.error("Error al leer riego:", error);
-    });
+      // Control de riego con botón
+      waterPumpBtn.addEventListener("click", () => {
+        set(ref(db, "invernadero/riego"), !motorEstado).catch((e) =>
+          console.error("Error al escribir riego:", e)
+        );
+      });
 
-    // Control de luz con botón
-    lightsBtn.addEventListener("click", () => {
-      set(ref(db, "invernadero/luz_led"), !luzLedEstado)
-        .catch(e => console.error("Error al escribir luz_led:", e));
-    });
+      // Sensores en tiempo real
+      onValue(ref(db, "invernadero/sensores/temperatura"), (snapshot) => {
+        document.getElementById("temperature").textContent =
+          snapshot.val() + " °C";
+      });
 
-    // Control de riego con botón
-    waterPumpBtn.addEventListener("click", () => {
-      set(ref(db, "invernadero/riego"), !motorEstado)
-        .catch(e => console.error("Error al escribir riego:", e));
-    });
+      onValue(ref(db, "invernadero/sensores/humedad"), (snapshot) => {
+        document.getElementById("humidity").textContent = snapshot.val() + " %";
+      });
 
-    // Sensores en tiempo real
-    onValue(ref(db, "invernadero/sensores/temperatura"), (snapshot) => {
-      document.getElementById("temperature").textContent = snapshot.val() + " °C";
-    });
+      onValue(ref(db, "invernadero/sensores/luz"), (snapshot) => {
+        document.getElementById("light").textContent = snapshot.val();
+      });
 
-    onValue(ref(db, "invernadero/sensores/humedad"), (snapshot) => {
-      document.getElementById("humidity").textContent = snapshot.val() + " %";
-    });
+      // Historial datos inventario
+      onValue(
+        ref(db, "invernadero/historial/datos_inventario"),
+        (snapshot) => {
+          const datos = snapshot.val();
+          tablaInventarioBody.innerHTML = "";
 
-    onValue(ref(db, "invernadero/sensores/luz"), (snapshot) => {
-      document.getElementById("light").textContent = snapshot.val();
-    });
-
-    // Historial datos inventario
-    onValue(ref(db, "invernadero/historial/datos_inventario"), (snapshot) => {
-      const datos = snapshot.val();
-      tablaInventarioBody.innerHTML = "";
-
-      if (datos && Array.isArray(datos)) {
-        datos.forEach(item => {
-          const fila = document.createElement("tr");
-          fila.innerHTML = `
+          if (datos && Array.isArray(datos)) {
+            datos.forEach((item) => {
+              const fila = document.createElement("tr");
+              fila.innerHTML = `
             <td>${formatoFecha(item.fecha)}</td>
             <td>${item.temperatura}</td>
             <td>${item.humedad}</td>
             <td>${item.luz}</td>
             <td>${item.riego_activado ? "Sí" : "No"}</td>
           `;
-          tablaInventarioBody.appendChild(fila);
-        });
-      } else {
-        tablaInventarioBody.innerHTML = "<tr><td colspan='5'>No hay datos disponibles.</td></tr>";
-      }
-    }, (error) => {
-      console.error("Error leyendo datos_inventario:", error);
-      tablaInventarioBody.innerHTML = "<tr><td colspan='5'>Error cargando datos.</td></tr>";
-    });
+              tablaInventarioBody.appendChild(fila);
+            });
+          } else {
+            tablaInventarioBody.innerHTML =
+              "<tr><td colspan='5'>No hay datos disponibles.</td></tr>";
+          }
+        },
+        (error) => {
+          console.error("Error leyendo datos_inventario:", error);
+          tablaInventarioBody.innerHTML =
+            "<tr><td colspan='5'>Error cargando datos.</td></tr>";
+        }
+      );
 
-    // Historial eventos
-    onValue(ref(db, "invernadero/historial/eventos"), (snapshot) => {
-      const eventos = snapshot.val();
-      tablaEventosBody.innerHTML = "";
+      // Historial eventos
+      onValue(
+        ref(db, "invernadero/historial/eventos"),
+        (snapshot) => {
+          const eventos = snapshot.val();
+          tablaEventosBody.innerHTML = "";
 
-      if (eventos && Array.isArray(eventos)) {
-        eventos.forEach(evento => {
-          const fila = document.createElement("tr");
-          fila.innerHTML = `
+          if (eventos && Array.isArray(eventos)) {
+            eventos.forEach((evento) => {
+              const fila = document.createElement("tr");
+              fila.innerHTML = `
             <td>${formatoFecha(evento.fecha)}</td>
             <td>${evento.tipo || "-"}</td>
             <td>${evento.duracion ?? "-"}</td>
@@ -190,15 +236,19 @@
             <td>${evento.descripcion || "-"}</td>
             <td>${evento.nivel || "-"}</td>
           `;
-          tablaEventosBody.appendChild(fila);
-        });
-      } else {
-        tablaEventosBody.innerHTML = "<tr><td colspan='6'>No hay eventos disponibles.</td></tr>";
-      }
-    }, (error) => {
-      console.error("Error leyendo eventos:", error);
-      tablaEventosBody.innerHTML = "<tr><td colspan='6'>Error cargando eventos.</td></tr>";
-    });
-  </script>
-</body>
+              tablaEventosBody.appendChild(fila);
+            });
+          } else {
+            tablaEventosBody.innerHTML =
+              "<tr><td colspan='6'>No hay eventos disponibles.</td></tr>";
+          }
+        },
+        (error) => {
+          console.error("Error leyendo eventos:", error);
+          tablaEventosBody.innerHTML =
+            "<tr><td colspan='6'>Error cargando eventos.</td></tr>";
+        }
+      );
+    </script>
+  </body>
 </html>

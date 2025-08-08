@@ -21,12 +21,22 @@ body {
   }
 }
 
-/* Contenedor general */
-.container, .container-historial {
-  max-width: 900px;
-  margin: 30px auto;
-  padding: 0 15px;
-  box-sizing: border-box;
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Header con efecto de brillo */
@@ -76,7 +86,7 @@ h1 {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Tarjetas de datos */
+/* Tarjetas de datos con hover y animación */
 .sensor-data {
   display: flex;
   justify-content: space-between;
@@ -156,106 +166,147 @@ h1 {
   color: #444;
 }
 
-/* Tablas historial */
-table.historial {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  margin-bottom: 40px;
-  font-size: 14px;
+/* Controles manuales con animaciones mejoradas */
+.controls {
   background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
-table.historial th, table.historial td {
-  border: 1px solid #ddd;
-  padding: 10px 15px;
-  text-align: left;
-  vertical-align: middle;
+.controls:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-table.historial th {
-  background-color: #4caf50;
-  color: white;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+.control-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 20px 0;
 }
 
-table.historial tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-/* Ajuste para que celdas no se rompan en varias líneas */
-table.historial td {
-  white-space: nowrap;
-}
-
-/* Contenedores de las tablas para margen */
-.container-historial {
-  margin-top: 40px;
-  margin-bottom: 50px;
-  padding: 0 20px;
-}
-
-/* Botones */
 .btn {
-  padding: 12px 24px;
-  font-size: 16px;
-  cursor: pointer;
+  padding: 12px 20px;
   border: none;
-  border-radius: 6px;
-  color: white;
-  background-color: #28a745;
-  transition: background-color 0.4s ease, box-shadow 0.4s ease;
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  user-select: none;
-  outline: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.btn.luz-on {
-  background-color: #4caf50;
-  box-shadow: 0 0 12px #28a745;
-}
-
-.btn.pump-on {
-  background-color: #4caf50;
-  animation: pulse 1.5s infinite;
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0) 45%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 55%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
 }
 
 .btn:hover {
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.btn:active {
-  transform: scale(0.95);
-  transition: transform 0.1s ease;
+.btn:hover::after {
+  transform: translateX(100%);
 }
 
-/* Animaciones de botones y carga */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
+#water-pump-btn {
+  background: #ff6b6b;
+  color: white;
 }
 
-@keyframes blink {
-  0%, 100% {opacity: 1;}
-  50% {opacity: 0.5;}
+#water-pump-btn.pump-on {
+  background: #4caf50;
+  animation: pulse 1.5s infinite;
 }
 
-.value[data-loading="true"] {
-  animation: blink 1.5s infinite;
+#lights-toggle-btn {
+  background: #ffcc5c;
+  color: #333;
 }
 
-/* Footer */
+#lights-toggle-btn.lights-off-active {
+  background: #333;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+#control-status {
+  font-style: italic;
+  color: #666;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+/* Estilos para las tablas de historial */
+.history-container,
+.chart-container {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  transition: all 0.3s ease;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.history-container:hover,
+.chart-container:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.history-container h2,
+.chart-container h2 {
+  color: #4caf50;
+  margin-top: 0;
+  text-align: center;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th {
+  background-color: #4caf50;
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Pie de página con efecto de onda */
 footer {
   text-align: center;
   padding: 10px;
@@ -286,18 +337,54 @@ footer::before {
   }
 }
 
-/* Responsive */
+/* Efecto de pulso */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Efecto de carga para los valores */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.value[data-loading="true"] {
+  animation: blink 1.5s infinite;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
   .sensor-data {
     flex-direction: column;
   }
+
   .control-buttons {
     flex-direction: column;
   }
+
   .btn {
     width: 100%;
   }
-  table.historial td, table.historial th {
-    white-space: normal;
+
+  table {
+    font-size: 0.9em;
+  }
+
+  th,
+  td {
+    padding: 8px 5px;
   }
 }
