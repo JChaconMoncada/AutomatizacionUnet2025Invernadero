@@ -2,59 +2,83 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Invernadero Automático</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="styles.css" />
 
     <script type="module">
-      // Importar SDKs de Firebase
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+      import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
-      // Configuración de Firebase
-      const firebaseConfig = {
-        apiKey: "AIzaSyAdF3v1I9a6cFVcLBE24Sy8EICiV1c3r3M",
-        authDomain: "automatizacionarduino.firebaseapp.com",
-        projectId: "automatizacionarduino",
-        storageBucket: "automatizacionarduino.firebasestorage.app",
-        messagingSenderId: "224255036880",
-        appId: "1:224255036880:web:d62a4716e10ba4e8fa3dd5",
-        measurementId: "G-9CZ9GR0YR5",
-        databaseURL: "https://automatizacionarduino-default-rtdb.firebaseio.com"
-      };
+      // Esperar a que el DOM esté cargado
+      window.addEventListener("DOMContentLoaded", () => {
 
-      // Inicializar Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const db = getDatabase(app);
+        // Configuración Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyAdF3v1I9a6cFVcLBE24Sy8EICiV1c3r3M",
+          authDomain: "automatizacionarduino.firebaseapp.com",
+          projectId: "automatizacionarduino",
+          storageBucket: "automatizacionarduino.firebasestorage.app",
+          messagingSenderId: "224255036880",
+          appId: "1:224255036880:web:d62a4716e10ba4e8fa3dd5",
+          measurementId: "G-9CZ9GR0YR5",
+          databaseURL: "https://automatizacionarduino-default-rtdb.firebaseio.com"
+        };
 
-      // Referencias en la base de datos
-      const tempRef = ref(db, "invernadero/sensores/temperatura");
-      const humRef = ref(db, "invernadero/sensores/humedad");
-      const luzRef = ref(db, "invernadero/sensores/luz");
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getDatabase(app);
 
-      // Escuchar cambios en tiempo real
-      onValue(tempRef, (snapshot) => {
-        const temp = snapshot.val();
-        document.getElementById("temperature").textContent = temp + " °C";
-        document.getElementById("temp-status").textContent =
-          temp > 30 ? "Calor alto" : "Temperatura óptima";
-      });
+        // Referencias Firebase
+        const luzLedRef = ref(db, "invernadero/estado/luz_led");
+        const tempRef = ref(db, "invernadero/sensores/temperatura");
+        const humRef = ref(db, "invernadero/sensores/humedad");
+        const luzRef = ref(db, "invernadero/sensores/luz");
 
-      onValue(humRef, (snapshot) => {
-        const hum = snapshot.val();
-        document.getElementById("humidity").textContent = hum + " %";
-        document.getElementById("humidity-status").textContent =
-          hum < 40 ? "Baja humedad" : "Humedad adecuada";
-      });
+        // Referencia al botón
+        const lightsBtn = document.getElementById("lights-toggle-btn");
 
-      onValue(luzRef, (snapshot) => {
-        const luz = snapshot.val();
-        document.getElementById("light").textContent = luz;
-        document.getElementById("light-status").textContent =
-          luz < 500 ? "Poca luz" : "Luz suficiente";
+        // Variable para guardar estado actual
+        let luzLedEstado = false;
+
+        // Escuchar cambios en luz_led para actualizar botón
+        onValue(luzLedRef, (snapshot) => {
+          luzLedEstado = snapshot.val();
+          lightsBtn.textContent = luzLedEstado ? "🔦 Apagar Luz" : "💡 Encender Luz";
+        });
+
+        // Función para cambiar estado luz al hacer click
+        lightsBtn.addEventListener("click", () => {
+          update(ref(db, "invernadero/estado"), { luz_led: !luzLedEstado });
+        });
+
+        // Escuchar temperatura y actualizar
+        onValue(tempRef, (snapshot) => {
+          const temp = snapshot.val();
+          document.getElementById("temperature").textContent = temp + " °C";
+          document.getElementById("temp-status").textContent =
+            temp > 30 ? "Calor alto" : "Temperatura óptima";
+        });
+
+        // Escuchar humedad y actualizar
+        onValue(humRef, (snapshot) => {
+          const hum = snapshot.val();
+          document.getElementById("humidity").textContent = hum + " %";
+          document.getElementById("humidity-status").textContent =
+            hum < 40 ? "Baja humedad" : "Humedad adecuada";
+        });
+
+        // Escuchar luz y actualizar
+        onValue(luzRef, (snapshot) => {
+          const luz = snapshot.val();
+          document.getElementById("light").textContent = luz;
+          document.getElementById("light-status").textContent =
+            luz < 500 ? "Poca luz" : "Luz suficiente";
+        });
+
       });
     </script>
   </head>
@@ -66,7 +90,7 @@
       </header>
 
       <main>
-        <!-- Sección de datos -->
+        <!-- Datos sensores -->
         <div class="sensor-data">
           <div class="data-card">
             <h2>🌡️ Temperatura</h2>
@@ -92,7 +116,7 @@
           <h2>⚙️ Controles Manuales</h2>
           <div class="control-buttons">
             <button id="water-pump-btn" class="btn pump-off">💦 Encender Bomba de Agua</button>
-            <button id="lights-off-btn" class="btn lights-off">🔦 Forzar Apagado de Luces</button>
+            <button id="lights-toggle-btn" class="btn">💡 Encender Luz</button>
           </div>
           <p id="control-status">Modo automático activado.</p>
         </div>
