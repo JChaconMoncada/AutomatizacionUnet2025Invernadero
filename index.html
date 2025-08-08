@@ -4,41 +4,113 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Invernadero Automático</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      max-width: 900px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+    .btn {
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .luz-on {
+      background-color: yellow;
+    }
+    .motor-on {
+      background-color: lightblue;
+    }
+  </style>
 </head>
 <body>
-  <h2>📊 Historial de Datos de Inventario</h2>
-  <table border="1" style="width: 100%; border-collapse: collapse;" id="tabla-datos-inventario">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Temperatura (°C)</th>
-        <th>Humedad (%)</th>
-        <th>Luz</th>
-        <th>Riego Activado</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h1>🌱 Invernadero Automático</h1>
+  <p style="text-align:center;">Monitoreo y control en tiempo real</p>
 
-  <h2>📋 Historial de Eventos</h2>
-  <table border="1" style="width: 100%; border-collapse: collapse;" id="tabla-eventos">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Tipo</th>
-        <th>Duración (seg)</th>
-        <th>Estado</th>
-        <th>Descripción</th>
-        <th>Nivel</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <!-- Datos sensores actuales -->
+  <section>
+    <h2>Datos Sensores</h2>
+    <div style="display: flex; justify-content: space-around; margin-bottom: 30px;">
+      <div>
+        <h3>🌡️ Temperatura</h3>
+        <p id="temperature">-- °C</p>
+      </div>
+      <div>
+        <h3>💧 Humedad</h3>
+        <p id="humidity">-- %</p>
+      </div>
+      <div>
+        <h3>☀️ Luz</h3>
+        <p id="light">--</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Controles manuales -->
+  <section>
+    <h2>⚙️ Controles Manuales</h2>
+    <button id="water-pump-btn" class="btn pump-off">💦 Encender Bomba de Agua</button>
+    <button id="lights-toggle-btn" class="btn">💡 Encender Luz</button>
+    <p id="control-status" style="margin-top: 10px; font-style: italic;">Modo automático activado.</p>
+  </section>
+
+  <!-- Historial datos de inventario -->
+  <section>
+    <h2>📊 Historial de Datos de Inventario</h2>
+    <table id="tabla-datos-inventario">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Temperatura (°C)</th>
+          <th>Humedad (%)</th>
+          <th>Luz</th>
+          <th>Riego Activado</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- Historial eventos -->
+  <section>
+    <h2>📋 Historial de Eventos</h2>
+    <table id="tabla-eventos">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Duración (segundos)</th>
+          <th>Estado</th>
+          <th>Descripción</th>
+          <th>Nivel</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
+    // Configuración Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAdF3v1I9a6cFVcLBE24Sy8EICiV1c3r3M",
       authDomain: "automatizacionarduino.firebaseapp.com",
@@ -53,15 +125,65 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // Referencias a botones y tablas
+    const lightsBtn = document.getElementById("lights-toggle-btn");
+    const waterPumpBtn = document.getElementById("water-pump-btn");
     const tablaInventarioBody = document.querySelector("#tabla-datos-inventario tbody");
     const tablaEventosBody = document.querySelector("#tabla-eventos tbody");
 
+    let luzLedEstado = false;
+    let motorEstado = false;
+
+    // Función para formatear fechas
     function formatoFecha(fechaStr) {
       const d = new Date(fechaStr);
       return d.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
     }
 
-    // Leer historial datos_inventario
+    // Escuchar estado luz_led
+    onValue(ref(db, "invernadero/luz_led"), (snapshot) => {
+      luzLedEstado = snapshot.val();
+      lightsBtn.textContent = luzLedEstado ? "🔦 Apagar Luz" : "💡 Encender Luz";
+      lightsBtn.classList.toggle("luz-on", luzLedEstado);
+    }, (error) => {
+      console.error("Error al leer luz_led:", error);
+    });
+
+    // Escuchar estado riego
+    onValue(ref(db, "invernadero/riego"), (snapshot) => {
+      motorEstado = snapshot.val();
+      waterPumpBtn.textContent = motorEstado ? "💧 Apagar Bomba" : "💦 Encender Bomba";
+      waterPumpBtn.classList.toggle("motor-on", motorEstado);
+    }, (error) => {
+      console.error("Error al leer riego:", error);
+    });
+
+    // Control de luz con botón
+    lightsBtn.addEventListener("click", () => {
+      set(ref(db, "invernadero/luz_led"), !luzLedEstado)
+        .catch(e => console.error("Error al escribir luz_led:", e));
+    });
+
+    // Control de riego con botón
+    waterPumpBtn.addEventListener("click", () => {
+      set(ref(db, "invernadero/riego"), !motorEstado)
+        .catch(e => console.error("Error al escribir riego:", e));
+    });
+
+    // Sensores en tiempo real
+    onValue(ref(db, "invernadero/sensores/temperatura"), (snapshot) => {
+      document.getElementById("temperature").textContent = snapshot.val() + " °C";
+    });
+
+    onValue(ref(db, "invernadero/sensores/humedad"), (snapshot) => {
+      document.getElementById("humidity").textContent = snapshot.val() + " %";
+    });
+
+    onValue(ref(db, "invernadero/sensores/luz"), (snapshot) => {
+      document.getElementById("light").textContent = snapshot.val();
+    });
+
+    // Historial datos inventario
     onValue(ref(db, "invernadero/historial/datos_inventario"), (snapshot) => {
       const datos = snapshot.val();
       tablaInventarioBody.innerHTML = "";
@@ -86,7 +208,7 @@
       tablaInventarioBody.innerHTML = "<tr><td colspan='5'>Error cargando datos.</td></tr>";
     });
 
-    // Leer historial eventos
+    // Historial eventos
     onValue(ref(db, "invernadero/historial/eventos"), (snapshot) => {
       const eventos = snapshot.val();
       tablaEventosBody.innerHTML = "";
