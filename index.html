@@ -1,170 +1,139 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Invernadero Automático</title>
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="styles.css" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Invernadero Automático</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+      margin: 5px;
+    }
+    .luz-on {
+      background-color: #f6e58d;
+      box-shadow: 0 0 15px #f9ca24;
+    }
+    .motor-on {
+      background-color: #7ed6df;
+      box-shadow: 0 0 15px #22a6b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌱 Invernadero Automático</h1>
+      <p>Monitoreo en tiempo real</p>
+    </header>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-      import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
-
-      // Esperar a que el DOM esté cargado
-      window.addEventListener("DOMContentLoaded", () => {
-
-        // Configuración Firebase
-        const firebaseConfig = {
-          apiKey: "AIzaSyAdF3v1I9a6cFVcLBE24Sy8EICiV1c3r3M",
-          authDomain: "automatizacionarduino.firebaseapp.com",
-          projectId: "automatizacionarduino",
-          storageBucket: "automatizacionarduino.firebasestorage.app",
-          messagingSenderId: "224255036880",
-          appId: "1:224255036880:web:d62a4716e10ba4e8fa3dd5",
-          measurementId: "G-9CZ9GR0YR5",
-          databaseURL: "https://automatizacionarduino-default-rtdb.firebaseio.com"
-        };
-
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getDatabase(app);
-
-        // Referencias Firebase
-        const luzLedRef = ref(db, "invernadero/estado/luz_led");
-        const tempRef = ref(db, "invernadero/sensores/temperatura");
-        const humRef = ref(db, "invernadero/sensores/humedad");
-        const luzRef = ref(db, "invernadero/sensores/luz");
-
-        // Referencia al botón
-        const lightsBtn = document.getElementById("lights-toggle-btn");
-
-        // Variable para guardar estado actual
-        let luzLedEstado = false;
-
-        // Referencia al estado del motor (riego)
-        const motorRef = ref(db, "invernadero/estado/riego");
-        
-        // Referencia al botón de la bomba
-        const waterPumpBtn = document.getElementById("water-pump-btn");
-        
-        let motorEstado = false;
-
-        // Escuchar cambios en el estado del motor para actualizar texto y clase
-        onValue(motorRef, (snapshot) => {
-          motorEstado = snapshot.val();
-          waterPumpBtn.textContent = motorEstado ? "💧 Apagar Bomba" : "💦 Encender Bomba";
-        
-          if (motorEstado) {
-            waterPumpBtn.classList.add("motor-on");
-          } else {
-            waterPumpBtn.classList.remove("motor-on");
-          }
-        });
-        
-        // Cambiar estado del motor al hacer clic en el botón
-        waterPumpBtn.addEventListener("click", () => {
-          update(ref(db, "invernadero/estado"), { riego: !motorEstado });
-        });
-
-        // Escuchar cambios en luz_led para actualizar botón
-        onValue(luzLedRef, (snapshot) => {
-          luzLedEstado = snapshot.val();
-          lightsBtn.textContent = luzLedEstado ? "🔦 Apagar Luz" : "💡 Encender Luz";
-
-          // Cambiar Clases para animacion y color
-          if (luzLedEstado) {
-            lightsBtn.classList.add("luz-on");
-          } else {
-            lightsBtn.classList.remove("luz-on");
-          }
-        });
-
-        // Función para cambiar estado luz al hacer click
-        lightsBtn.addEventListener("click", () => {
-          update(ref(db, "invernadero/estado"), { luz_led: !luzLedEstado });
-        });
-
-        // Escuchar temperatura y actualizar
-        onValue(tempRef, (snapshot) => {
-          const temp = snapshot.val();
-          document.getElementById("temperature").textContent = temp + " °C";
-          document.getElementById("temp-status").textContent =
-            temp > 30 ? "Calor alto" : "Temperatura óptima";
-        });
-
-        // Escuchar humedad y actualizar
-        onValue(humRef, (snapshot) => {
-          const hum = snapshot.val();
-          document.getElementById("humidity").textContent = hum + " %";
-          document.getElementById("humidity-status").textContent =
-            hum < 40 ? "Baja humedad" : "Humedad adecuada";
-        });
-
-        // Escuchar luz y actualizar
-        onValue(luzRef, (snapshot) => {
-          const luz = snapshot.val();
-          document.getElementById("light").textContent = luz;
-          document.getElementById("light-status").textContent =
-            luz < 500 ? "Poca luz" : "Luz suficiente";
-        });
-
-      });
-    </script>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <h1>🌱 Invernadero Automático</h1>
-        <p>Monitoreo en tiempo real</p>
-      </header>
-
-      <main>
-        <!-- Datos sensores -->
-        <div class="sensor-data">
-          <div class="data-card">
-            <h2>🌡️ Temperatura</h2>
-            <p class="value" id="temperature">-- °C</p>
-            <p class="status">Estado: <span id="temp-status">Esperando datos...</span></p>
-          </div>
-
-          <div class="data-card">
-            <h2>💧 Humedad</h2>
-            <p class="value" id="humidity">-- %</p>
-            <p class="status">Estado: <span id="humidity-status">Esperando datos...</span></p>
-          </div>
-
-          <div class="data-card">
-            <h2>☀️ Luz</h2>
-            <p class="value" id="light">--</p>
-            <p class="status">Estado: <span id="light-status">Esperando datos...</span></p>
-          </div>
+    <main>
+      <!-- Datos sensores -->
+      <div class="sensor-data">
+        <div class="data-card">
+          <h2>🌡️ Temperatura</h2>
+          <p class="value" id="temperature">-- °C</p>
+          <p class="status">Estado: <span id="temp-status">Esperando datos...</span></p>
         </div>
 
-        <!-- Controles manuales -->
-        <div class="controls">
-          <h2>⚙️ Controles Manuales</h2>
-          <div class="control-buttons">
-            <button id="water-pump-btn" class="btn pump-off">💦 Encender Bomba de Agua</button>
-            <button id="lights-toggle-btn" class="btn">💡 Encender Luz</button>
-          </div>
-          <p id="control-status">Modo automático activado.</p>
+        <div class="data-card">
+          <h2>💧 Humedad</h2>
+          <p class="value" id="humidity">-- %</p>
+          <p class="status">Estado: <span id="humidity-status">Esperando datos...</span></p>
         </div>
 
-        <!-- Gráfico simulado -->
-        <div class="chart-container">
-          <h2>📊 Historial de Datos</h2>
-          <div class="chart-placeholder">
-            <p>(Aquí irá un gráfico con datos de temperatura, humedad y luz)</p>
-          </div>
+        <div class="data-card">
+          <h2>☀️ Luz</h2>
+          <p class="value" id="light">--</p>
+          <p class="status">Estado: <span id="light-status">Esperando datos...</span></p>
         </div>
-      </main>
+      </div>
 
-      <footer>
-        <p>Sistema de monitoreo para invernadero | © 2025</p>
-      </footer>
-    </div>
-  </body>
+      <!-- Controles manuales -->
+      <div class="controls">
+        <h2>⚙️ Controles Manuales</h2>
+        <div class="control-buttons">
+          <button id="water-pump-btn" class="btn pump-off">💦 Encender Bomba de Agua</button>
+          <button id="lights-toggle-btn" class="btn">💡 Encender Luz</button>
+        </div>
+        <p id="control-status">Modo automático activado.</p>
+      </div>
+    </main>
+
+    <footer>
+      <p>Sistema de monitoreo para invernadero | © 2025</p>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+    // Configuración Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdF3v1I9a6cFVcLBE24Sy8EICiV1c3r3M",
+      authDomain: "automatizacionarduino.firebaseapp.com",
+      databaseURL: "https://automatizacionarduino-default-rtdb.firebaseio.com",
+      projectId: "automatizacionarduino",
+      storageBucket: "automatizacionarduino.firebasestorage.app",
+      messagingSenderId: "224255036880",
+      appId: "1:224255036880:web:d62a4716e10ba4e8fa3dd5",
+      measurementId: "G-9CZ9GR0YR5"
+    };
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Referencias a los controles
+    const lightsBtn = document.getElementById("lights-toggle-btn");
+    const waterPumpBtn = document.getElementById("water-pump-btn");
+
+    // Estados iniciales
+    let luzLedEstado = false;
+    let motorEstado = false;
+
+    // Escuchar cambios en el LED
+    onValue(ref(db, "invernadero/estado/luz_led"), (snapshot) => {
+      luzLedEstado = snapshot.val();
+      lightsBtn.textContent = luzLedEstado ? "🔦 Apagar Luz" : "💡 Encender Luz";
+      lightsBtn.classList.toggle("luz-on", luzLedEstado);
+    });
+
+    // Escuchar cambios en el motor
+    onValue(ref(db, "invernadero/estado/riego"), (snapshot) => {
+      motorEstado = snapshot.val();
+      waterPumpBtn.textContent = motorEstado ? "💧 Apagar Bomba" : "💦 Encender Bomba";
+      waterPumpBtn.classList.toggle("motor-on", motorEstado);
+    });
+
+    // Control del LED
+    lightsBtn.addEventListener("click", () => {
+      set(ref(db, "invernadero/estado/luz_led"), !luzLedEstado);
+    });
+
+    // Control del motor
+    waterPumpBtn.addEventListener("click", () => {
+      set(ref(db, "invernadero/estado/riego"), !motorEstado);
+    });
+
+    // Sensores (opcional)
+    onValue(ref(db, "invernadero/sensores/temperatura"), (snapshot) => {
+      document.getElementById("temperature").textContent = snapshot.val() + " °C";
+    });
+
+    onValue(ref(db, "invernadero/sensores/humedad"), (snapshot) => {
+      document.getElementById("humidity").textContent = snapshot.val() + " %";
+    });
+
+    onValue(ref(db, "invernadero/sensores/luz"), (snapshot) => {
+      document.getElementById("light").textContent = snapshot.val();
+    });
+  </script>
+</body>
 </html>
