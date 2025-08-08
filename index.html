@@ -44,6 +44,31 @@
         // Variable para guardar estado actual
         let luzLedEstado = false;
 
+        // Referencia al estado del motor (riego)
+        const motorRef = ref(db, "invernadero/estado/riego");
+        
+        // Referencia al botón de la bomba
+        const waterPumpBtn = document.getElementById("water-pump-btn");
+        
+        let motorEstado = false;
+
+        // Escuchar cambios en el estado del motor para actualizar texto y clase
+        onValue(motorRef, (snapshot) => {
+          motorEstado = snapshot.val();
+          waterPumpBtn.textContent = motorEstado ? "💧 Apagar Bomba" : "💦 Encender Bomba";
+        
+          if (motorEstado) {
+            waterPumpBtn.classList.add("motor-on");
+          } else {
+            waterPumpBtn.classList.remove("motor-on");
+          }
+        });
+        
+        // Cambiar estado del motor al hacer clic en el botón
+        waterPumpBtn.addEventListener("click", () => {
+          update(ref(db, "invernadero/estado"), { riego: !motorEstado });
+        });
+
         // Escuchar cambios en luz_led para actualizar botón
         onValue(luzLedRef, (snapshot) => {
           luzLedEstado = snapshot.val();
